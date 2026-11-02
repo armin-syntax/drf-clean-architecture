@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from .entities import UserEntity
@@ -46,4 +47,10 @@ class UserRepository(ABC):
 
     @abstractmethod
     def check_email_exists(self, email: str) -> bool:
+        pass
+
+
+class ExternalUserRepository(ABC):
+    @abstractmethod
+    def fetch_all(self) -> list[UserEntity]:
         pass

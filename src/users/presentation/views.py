@@ -1,6 +1,7 @@
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from common.permissions import (
     IsAnonymousPermission,
@@ -26,6 +27,32 @@ from .serializers import (
     UserRegisterSerializer,
     UserUpdateSerializer,
 )
+from users.infrastructure.repositories import SqliteExternalUserRepository
+from users.application.use_cases import SyncUsersFromExternalDB
+
+
+class UserListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        use_case = ListUsers(DjangoUserRepository())
+        users_entity = use_case.execute()
+        return Response(UserListSerializer(users_entity, many=True).data)
+
+
+class SyncUsersView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        use_case = SyncUsersFromExternalDB(
+            external_repo=SqliteExternalUserRepository(),
+            main_repo=DjangoUserRepository()
+        )
+        try:
+            count = use_case.execute()
+            return Response({"message": f"{count} users synced successfully."}, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
 
 
 class UserRegisterView(generics.CreateAPIView):
@@ -42,15 +69,6 @@ class UserRegisterView(generics.CreateAPIView):
             return Response(UserProfileSerializer(user_entity).data,status=status.HTTP_201_CREATED,)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST,)
-
-
-class UserListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        use_case = ListUsers(DjangoUserRepository())
-        users_entity = use_case.execute()
-        return Response(UserListSerializer(users_entity, many=True).data)
 
 
 class UserProfileView(generics.RetrieveAPIView):
