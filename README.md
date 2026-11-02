@@ -1,186 +1,102 @@
 # Django Clean Architecture API
 
-A structured, scalable, and maintainable RESTful API built with **Django** and **Django REST Framework (DRF)**. This project follows **Clean Architecture** principles to ensure separation of concerns, maintainability, testability, and flexibility.
+A scalable RESTful API built with **Django** and **Django REST Framework (DRF)**, following **Clean Architecture** principles.
 
----
+The project demonstrates a modular backend architecture with independent business logic, JWT authentication, multi-database integration, and data synchronization. It is fully containerized using Docker Compose.
 
-## 🏗️ Architecture
+## Tech Stack
 
-The project is organized into four independent layers:
+- **Language:** Python 3
+- **Backend:** Django, Django REST Framework
+- **Databases:** PostgreSQL, SQLite
+- **Authentication:** JWT (Simple JWT)
+- **API Documentation:** drf-spectacular
+- **Containerization:** Docker, Docker Compose
 
-1. **Domain**: Contains core entities and repository interfaces (abstract classes). This layer has no dependencies on Django or database technologies.
-2. **Application**: Contains use cases and business logic. It coordinates application workflows through domain interfaces.
-3. **Infrastructure**: Contains Django ORM models and concrete repository implementations responsible for database operations.
-4. **Presentation**: Contains API views, serializers, permissions, and URL configurations. It handles HTTP requests and responses.
+## Architecture
 
-### Request Flow
+The application is organized into four layers:
 
-```text
-HTTP Request
-     |
-     v
-Presentation (Views)
-     |
-     v
-Application (Use Cases)
-     |
-     v
-Domain (Repository Interfaces)
-     |
-     v
-Infrastructure (Repository Implementations)
-     |
-     v
-Database
-```
+- **Domain:** Core entities and repository interfaces.
+- **Application:** Use cases and business logic.
+- **Infrastructure:** Database models and repository implementations.
+- **Presentation:** API views, serializers, and permissions.
 
----
-
-## 🚀 Features
-
-- **Clean Architecture**: Separation of business logic, infrastructure, and presentation concerns.
-- **Custom User Model**: Extended Django user model with UUID identifiers and additional profile fields.
-- **JWT Authentication**: Secure authentication using JSON Web Tokens.
-- **User Management**: User registration, profile retrieval, profile updates, and account deletion.
-- **Follow System**: Users can follow and unfollow other users.
-- **Post Management**: Complete CRUD operations for posts.
-- **Ownership Validation**: Users can only modify or delete their own posts.
-- **Custom Permissions**: Reusable permission classes to enforce access control.
-- **API Documentation**: Interactive API documentation with Swagger UI and ReDoc.
-- **Repository Pattern**: Database operations are abstracted behind repository interfaces, making it easier to change data sources or implementations.
-
----
-
-## 🛠️ Tech Stack
-
-- **Language**: Python 3
-- **Framework**: Django
-- **REST API**: Django REST Framework
-- **Authentication**: djangorestframework-simplejwt
-- **Database**: SQLite (Development)
-- **API Documentation**: drf-spectacular
-
-## ⚙️ Installation & Setup
-
-Follow these steps to run the project locally.
+## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/armin.syntax/drf-clean-architecture.git
+git clone https://github.com/armin-syntax/drf-clean-architecture.git
 cd drf-clean-architecture
 ```
 
-### 2. Create a virtual environment
+### 2. Build and start the containers
 
 ```bash
-python3 -m venv venv
+docker compose up --build -d
 ```
 
-### 3. Activate the virtual environment
-
-**Linux / macOS:**
+### 3. Populate the external SQLite database
 
 ```bash
-source venv/bin/activate
+docker compose exec web python seed_external.py
 ```
 
-**Windows (CMD):**
+### 4. Apply database migrations
 
 ```bash
-venv\Scripts\activate
+docker compose exec web python manage.py migrate
 ```
 
-### 4. Install dependencies
+### 5. Create a superuser
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+docker compose exec web python manage.py createsuperuser
 ```
 
-### 5. Apply database migrations
-
-```bash
-python src/manage.py makemigrations
-python src/manage.py migrate
-```
-
-### 6. Create a superuser (Optional)
-
-```bash
-python src/manage.py createsuperuser
-```
-
-### 7. Run the development server
-
-```bash
-python src/manage.py runserver
-```
+### 6. Access the application
 
 The API will be available at:
 
-```text
 http://127.0.0.1:8000/
-```
 
----
+## Data Synchronization
 
-## 📚 API Documentation
-
-This project uses **drf-spectacular** to generate API documentation.
-
-After starting the development server, you can access the documentation through the following endpoints:
-
-| Endpoint | Description |
-|---|---|
-| `/api/schema/` | OpenAPI schema (JSON/YAML) |
-| `/api/docs/` | Swagger UI |
-| `/api/redoc/` | ReDoc documentation |
-
-**Documentation URLs:**
-
-- Swagger UI: http://127.0.0.1:8000/api/docs/
-- ReDoc: http://127.0.0.1:8000/api/redoc/
-- OpenAPI Schema: http://127.0.0.1:8000/api/schema/
-
----
-
-## 🔐 Authentication
-
-Protected endpoints require a valid JWT access token.
-
-Include the access token in the request headers:
+The project includes an admin-only endpoint for synchronizing users from the external SQLite database into the primary PostgreSQL database.
 
 ```http
-Authorization: Bearer <your_access_token>
+POST /api/users/sync/
 ```
 
-To obtain a token, send a POST request to:
+Only administrators can access this endpoint.
 
-```text
-/api/auth/token/
+## API Documentation
+
+Once the containers are running, access the interactive API documentation:
+
+- **Swagger UI:** http://127.0.0.1:8000/api/docs/
+- **ReDoc:** http://127.0.0.1:8000/api/redoc/
+- **OpenAPI Schema:** http://127.0.0.1:8000/api/schema/
+
+## Stopping the Application
+
+```bash
+docker compose down
 ```
 
-To refresh an expired access token, use:
+To remove containers and volumes:
 
-```text
-/api/auth/token/refresh/
+```bash
+docker compose down -v
 ```
 
----
+**Note:** Removing volumes may permanently delete database data.
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
-
-**Armin Emami**
-
-GitHub: [@armin.syntax](https://github.com/armin.syntax)
-
----
-
-If you find this project useful, feel free to give it a ⭐ on GitHub!
+**Author:** [Armin](https://github.com/armin-syntax)
