@@ -85,19 +85,19 @@ ASGI_APPLICATION = "config.asgi.application"
 # ============================================================
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "ENGINE": "mssql",
+        "NAME": os.getenv("MSSQL_DB_NAME", "master"),
+        "USER": "sa",
+        "PASSWORD": os.getenv("MSSQL_SA_PASSWORD"),
         "HOST": "db_main",
-        "PORT": "5432",
+        "PORT": "1433",
+        "OPTIONS": {"driver": "ODBC Driver 18 for SQL Server"},
     },
     "external_db": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "external.sqlite3",
     },
 }
-
 
 # ============================================================
 # Authentication & Custom User

@@ -12,31 +12,18 @@ services:
       - ./src:/app
     ports:
       - "8000:8000"
-    networks:
-      - app_network
 
   db_main:
-    image: postgres:16-alpine
-    container_name: postgres_main
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_main
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
     ports:
-      - "5432:5432"
+      - "1433:1433"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${MSSQL_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - app_network
-
-volumes:
-  postgres_data:
-
-networks:
-  app_network:
-    driver: bridge
+      start_period: 30s
